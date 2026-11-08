@@ -3,11 +3,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.database import init_db
+from app.routes import paypal_debug
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Database and startup initialization will hook here
+    # Initialize SQLite database and tables
+    init_db()
     yield
 
 
@@ -31,6 +34,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include Routers
+app.include_router(paypal_debug.router)
 
 
 @app.get("/health")
