@@ -32,19 +32,25 @@ def validate_mandate_limits(
 class MandateDraft(BaseModel):
     natural_language: str = Field(..., description="Original plain text spending rule")
     currency: str = Field(default="USD", description="Currency code, e.g. USD")
-    auto_approve_under_dollars: float = Field(..., gt=0, description="Auto approval threshold in dollars")
-    per_transaction_cap_dollars: float = Field(..., gt=0, description="Max amount per purchase in dollars")
-    monthly_cap_dollars: float = Field(..., gt=0, description="Max monthly spend in dollars")
+    auto_approve_under_dollars: float = Field(..., description="Auto approval threshold in dollars")
+    per_transaction_cap_dollars: float = Field(..., description="Max amount per purchase in dollars")
+    monthly_cap_dollars: float = Field(..., description="Max monthly spend in dollars")
     allowed_categories: List[str] = Field(default_factory=list, description="Allowed categories (empty = any non-blocked)")
     allowed_merchants: List[str] = Field(default_factory=list, description="Allowed merchants (empty = any)")
     blocked_categories: List[str] = Field(default_factory=default_blocked_categories, description="Blocked categories")
-    max_quantity_per_item: int = Field(default=3, gt=0, description="Max units allowed per item")
-    expires_in_days: int = Field(default=30, gt=0, description="Mandate validity period in days")
+    max_quantity_per_item: int = Field(default=3, description="Max units allowed per item")
+    expires_in_days: int = Field(default=30, description="Mandate validity period in days")
     summary: str = Field(..., description="Plain-English summary of the compiled mandate")
     assumptions: List[str] = Field(default_factory=list, description="Assumptions or defaults applied")
 
     @model_validator(mode="after")
     def validate_caps(self) -> "MandateDraft":
+        if self.auto_approve_under_dollars <= 0:
+            raise ValueError("auto_approve_under_dollars must be greater than 0")
+        if self.per_transaction_cap_dollars <= 0:
+            raise ValueError("per_transaction_cap_dollars must be greater than 0")
+        if self.monthly_cap_dollars <= 0:
+            raise ValueError("monthly_cap_dollars must be greater than 0")
         if not (self.auto_approve_under_dollars <= self.per_transaction_cap_dollars <= self.monthly_cap_dollars):
             raise ValueError(
                 f"Cap ordering violation: auto_approve (${self.auto_approve_under_dollars}) "
@@ -73,12 +79,12 @@ class Mandate(SQLModel, table=True):
     auto_approve_under_cents: int = SQLField(...)
     per_transaction_cap_cents: int = SQLField(...)
     monthly_cap_cents: int = SQLField(...)
-    
+
     # Store list fields as JSON in SQLite
     allowed_categories: List[str] = SQLField(default_factory=list, sa_column=Column(JSON))
     allowed_merchants: List[str] = SQLField(default_factory=list, sa_column=Column(JSON))
     blocked_categories: List[str] = SQLField(default_factory=default_blocked_categories, sa_column=Column(JSON))
-    
+
     max_quantity_per_item: int = SQLField(default=3)
     status: str = SQLField(default="active", index=True)  # "active" | "revoked" | "expired"
     signature: str = SQLField(...)

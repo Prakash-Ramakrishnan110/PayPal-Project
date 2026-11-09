@@ -17,3 +17,4 @@ Write-Host "Launching Frontend (Vite on http://localhost:5173)..." -ForegroundCo
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PSScriptRoot\..\frontend'; npm run dev"
 
 Write-Host "Mandate Guard dev servers launched!" -ForegroundColor Cyan
+

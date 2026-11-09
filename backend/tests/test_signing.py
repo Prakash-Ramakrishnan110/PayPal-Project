@@ -103,3 +103,4 @@ def test_validate_mandate_limits():
     # Invalid: non-positive amounts
     with pytest.raises(ValueError):
         validate_mandate_limits(0, 1000, 2000)
+

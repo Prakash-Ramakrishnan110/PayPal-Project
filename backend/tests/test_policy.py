@@ -297,3 +297,4 @@ def test_prompt_injection_gift_card_multi_violation(active_mandate: Mandate):
     assert "QUANTITY_EXCEEDED" in decision.reason_codes
     assert "MERCHANT_NOT_ALLOWED" in decision.reason_codes
     assert "OVER_MONTHLY_CAP" in decision.reason_codes
+

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     PAYPAL_BASE_URL: str = "https://api-m.sandbox.paypal.com"
 
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-3.1-flash-lite"
 
     MANDATE_SIGNING_SECRET: str = "mandate-guard-signing-secret-key-32chars-min"
 
@@ -25,3 +25,4 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+

@@ -33,3 +33,4 @@ class PendingApproval(SQLModel, table=True):
     merchant: str = SQLField(...)
     item_name: str = SQLField(...)
     status: str = SQLField(default="pending", index=True)  # "pending" | "approved" | "rejected"
+

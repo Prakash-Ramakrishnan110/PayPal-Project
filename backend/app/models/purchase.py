@@ -15,3 +15,4 @@ class PurchaseRequest(BaseModel):
     @property
     def total_price_cents(self) -> int:
         return self.unit_price_cents * self.quantity
+

@@ -254,3 +254,4 @@ class PayPalClient:
 
 # Singleton instance
 paypal_client = PayPalClient()
+

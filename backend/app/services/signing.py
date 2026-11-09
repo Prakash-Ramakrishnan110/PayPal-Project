@@ -66,3 +66,4 @@ def verify(mandate: Mandate, secret: str = None) -> bool:
 
     expected_signature = sign(mandate, secret=secret)
     return hmac.compare_digest(mandate.signature, expected_signature)
+
