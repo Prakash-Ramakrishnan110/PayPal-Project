@@ -111,6 +111,28 @@ export interface AgentRunResponse {
   success: boolean;
 }
 
+export interface BenchmarkResult {
+  total_attacks: number;
+  blocked_attacks: number;
+  block_rate_pct: number;
+  avg_latency_microseconds: number;
+  total_elapsed_ms: number;
+  attack_categories: Record<string, number>;
+  legitimate_accuracy_pct: number;
+  race_condition_defense: boolean;
+  verdict: string;
+}
+
+export interface SimulationResult {
+  decision: 'ALLOW' | 'ESCALATE' | 'BLOCK';
+  reason_codes: string[];
+  human_message: string;
+  amount_cents: number;
+  mandate_summary: string;
+  spent_cents: number;
+  reserved_cents: number;
+}
+
 const BASE_URL = '/api';
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -184,6 +206,22 @@ export const api = {
     request<AgentRunResponse>('/agent/run', {
       method: 'POST',
       body: JSON.stringify({ task }),
+    }),
+
+  // Live Benchmark & Policy Simulator
+  runBenchmark: () => request<BenchmarkResult>('/benchmark/run'),
+
+  simulatePurchase: (item: {
+    item_name: string;
+    category: string;
+    merchant: string;
+    unit_price_cents: number;
+    quantity: number;
+    currency?: string;
+  }) =>
+    request<SimulationResult>('/guard/simulate', {
+      method: 'POST',
+      body: JSON.stringify({ currency: 'USD', requested_by_agent: 'policy-simulator', ...item }),
     }),
 };
 

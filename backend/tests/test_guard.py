@@ -166,3 +166,28 @@ async def test_escalate_then_approve_creates_one_order(active_mandate: Mandate, 
         with pytest.raises(ValueError):
             await approve_pending_purchase(approval_id, session=test_session)
 
+
+def test_simulate_endpoint(active_mandate: Mandate, test_session: Session):
+    from app.routes.guard import simulate_purchase_request
+    req = PurchaseRequest(
+        item_name="Nike Running Shoes",
+        category="running_gear",
+        merchant="Nike",
+        unit_price_cents=4500,
+        quantity=1,
+    )
+    res = simulate_purchase_request(req, session=test_session)
+    assert res["decision"] == "ALLOW"
+    assert "WITHIN_MANDATE" in res["reason_codes"]
+
+
+def test_live_benchmark_endpoint():
+    from app.routes.guard import run_live_security_benchmark
+    bench = run_live_security_benchmark()
+    assert bench["total_attacks"] == 120
+    assert bench["blocked_attacks"] == 120
+    assert bench["block_rate_pct"] == 100.0
+    assert bench["race_condition_defense"] is True
+    assert bench["avg_latency_microseconds"] < 1000
+
+

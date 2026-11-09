@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
-import type { AgentTranscriptItem } from '../api';
+import type { AgentTranscriptItem, SimulationResult } from '../api';
 
 export const AgentPage: React.FC = () => {
   const [taskInput, setTaskInput] = useState('Find me running shoes under $60 and buy the best one');
@@ -10,6 +10,17 @@ export const AgentPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [redTeamAttackDetected, setRedTeamAttackDetected] = useState(false);
   const [lastVerdict, setLastVerdict] = useState<string | null>(null);
+
+  // Policy Simulator Sandbox State
+  const [simItem, setSimItem] = useState({
+    item_name: 'Trail Running Shoes',
+    category: 'running_gear',
+    merchant: 'Nike',
+    price_dollars: 45.0,
+    quantity: 1,
+  });
+  const [simResult, setSimResult] = useState<SimulationResult | null>(null);
+  const [simLoading, setSimLoading] = useState(false);
 
   const handleRunAgent = async (taskToRun: string, isRedTeam = false) => {
     try {
@@ -99,6 +110,25 @@ export const AgentPage: React.FC = () => {
       setError(err.message);
     } finally {
       setRunning(false);
+    }
+  };
+
+  const handleSimulate = async (customItem?: typeof simItem) => {
+    const target = customItem || simItem;
+    try {
+      setSimLoading(true);
+      const res = await api.simulatePurchase({
+        item_name: target.item_name,
+        category: target.category,
+        merchant: target.merchant,
+        unit_price_cents: Math.round(target.price_dollars * 100),
+        quantity: target.quantity,
+      });
+      setSimResult(res);
+    } catch (err: any) {
+      alert(`Simulation error: ${err.message}`);
+    } finally {
+      setSimLoading(false);
     }
   };
 
@@ -229,6 +259,199 @@ export const AgentPage: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* POLICY SIMULATOR: "WHAT-IF" SANDBOX */}
+      <div className="card" style={{ border: '2px solid #e2e8f0', background: '#ffffff' }}>
+        <div className="card-title">
+          <div>
+            <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              🧪 Instant Policy Simulator ("What-If" Sandbox)
+            </span>
+            <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '0.15rem' }}>
+              Test any hypothetical purchase against your mandate with instant 0-second latency
+            </div>
+          </div>
+          <span className="fingerprint" style={{ color: 'var(--paypal-blue)', background: '#eff6ff' }}>
+            ⚡ 0-second evaluation
+          </span>
+        </div>
+
+        {/* Quick Scenario Buttons */}
+        <div style={{ marginBottom: '1rem' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em', display: 'block', marginBottom: '0.4rem' }}>
+            CLICK TO LOAD "WHAT-IF" SCENARIOS:
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="chip"
+              onClick={() => {
+                const item = { item_name: 'Nike Air Zoom Pegasus', category: 'running_gear', merchant: 'Nike', price_dollars: 45.0, quantity: 1 };
+                setSimItem(item);
+                handleSimulate(item);
+              }}
+            >
+              🟢 What if: $45 Shoes from Nike?
+            </button>
+
+            <button
+              type="button"
+              className="chip"
+              onClick={() => {
+                const item = { item_name: 'Decathlon Windproof Jacket', category: 'running_gear', merchant: 'Decathlon', price_dollars: 75.0, quantity: 1 };
+                setSimItem(item);
+                handleSimulate(item);
+              }}
+            >
+              🟡 What if: $75 Jacket from Decathlon?
+            </button>
+
+            <button
+              type="button"
+              className="chip"
+              onClick={() => {
+                const item = { item_name: 'Bitcoin Crypto Voucher', category: 'crypto', merchant: 'CryptoDesk', price_dollars: 20.0, quantity: 1 };
+                setSimItem(item);
+                handleSimulate(item);
+              }}
+            >
+              🔴 What if: $20 Crypto Voucher?
+            </button>
+
+            <button
+              type="button"
+              className="chip"
+              onClick={() => {
+                const item = { item_name: 'Gucci Tracksuit', category: 'running_gear', merchant: 'Gucci', price_dollars: 50.0, quantity: 1 };
+                setSimItem(item);
+                handleSimulate(item);
+              }}
+            >
+              🔴 What if: Unauthorized Store (Gucci)?
+            </button>
+
+            <button
+              type="button"
+              className="chip"
+              onClick={() => {
+                const item = { item_name: 'Running Socks', category: 'running_gear', merchant: 'Decathlon', price_dollars: 10.0, quantity: 5 };
+                setSimItem(item);
+                handleSimulate(item);
+              }}
+            >
+              🔴 What if: Quantity Exceeded (5 units)?
+            </button>
+          </div>
+        </div>
+
+        {/* Inputs */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div>
+            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>ITEM NAME</label>
+            <input
+              type="text"
+              className="textarea-input"
+              style={{ minHeight: 'auto', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+              value={simItem.item_name}
+              onChange={(e) => setSimItem({ ...simItem, item_name: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>CATEGORY</label>
+            <input
+              type="text"
+              className="textarea-input"
+              style={{ minHeight: 'auto', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+              value={simItem.category}
+              onChange={(e) => setSimItem({ ...simItem, category: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>MERCHANT</label>
+            <input
+              type="text"
+              className="textarea-input"
+              style={{ minHeight: 'auto', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+              value={simItem.merchant}
+              onChange={(e) => setSimItem({ ...simItem, merchant: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>PRICE ($ USD)</label>
+            <input
+              type="number"
+              step="0.01"
+              className="textarea-input"
+              style={{ minHeight: 'auto', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+              value={simItem.price_dollars}
+              onChange={(e) => setSimItem({ ...simItem, price_dollars: parseFloat(e.target.value) || 0 })}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>QUANTITY</label>
+            <input
+              type="number"
+              min="1"
+              className="textarea-input"
+              style={{ minHeight: 'auto', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+              value={simItem.quantity}
+              onChange={(e) => setSimItem({ ...simItem, quantity: parseInt(e.target.value) || 1 })}
+            />
+          </div>
+        </div>
+
+        <button
+          className="primary-btn"
+          style={{ fontSize: '0.85rem', padding: '0.55rem 1.25rem' }}
+          onClick={() => handleSimulate()}
+          disabled={simLoading}
+        >
+          {simLoading ? 'Simulating...' : 'Test Policy Verdict ➡️'}
+        </button>
+
+        {/* Simulation Output Banner */}
+        {simResult && (
+          <div
+            style={{
+              marginTop: '1.25rem',
+              borderRadius: 10,
+              padding: '1.25rem',
+              border: `2px solid ${simResult.decision === 'ALLOW' ? 'var(--accent-green-border)' : simResult.decision === 'ESCALATE' ? 'var(--accent-amber-border)' : 'var(--accent-red-border)'}`,
+              background: simResult.decision === 'ALLOW' ? 'var(--accent-green-bg)' : simResult.decision === 'ESCALATE' ? 'var(--accent-amber-bg)' : 'var(--accent-red-bg)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <span className={`badge ${simResult.decision === 'ALLOW' ? 'badge-allow' : simResult.decision === 'ESCALATE' ? 'badge-escalate' : 'badge-block'}`}>
+                  SIMULATED VERDICT: {simResult.decision}
+                </span>
+                <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>
+                  Total: ${(simResult.amount_cents / 100).toFixed(2)} USD
+                </strong>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Rule: "{simResult.mandate_summary}"
+              </span>
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', margin: '0.4rem 0 0.75rem 0', fontWeight: 500 }}>
+              {simResult.human_message}
+            </p>
+
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+              {simResult.reason_codes.map((rc, i) => (
+                <span key={i} className="fingerprint" style={{ background: '#ffffff', color: simResult.decision === 'BLOCK' ? 'var(--accent-red)' : simResult.decision === 'ESCALATE' ? 'var(--accent-amber)' : 'var(--accent-green)' }}>
+                  {rc}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {error && (

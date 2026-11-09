@@ -6,7 +6,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 
 import { api } from '../api';
-import type { AuditEvent, GuardStats, PendingApproval } from '../api';
+import type { AuditEvent, GuardStats, PendingApproval, BenchmarkResult } from '../api';
 
 export const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<GuardStats | null>(null);
@@ -15,6 +15,10 @@ export const DashboardPage: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<AuditEvent | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(true);
+
+  // Live Benchmark State
+  const [benchmark, setBenchmark] = useState<BenchmarkResult | null>(null);
+  const [benchmarking, setBenchmarking] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -63,6 +67,28 @@ export const DashboardPage: React.FC = () => {
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleRunBenchmark = async () => {
+    try {
+      setBenchmarking(true);
+      const res = await api.runBenchmark();
+      setBenchmark(res);
+    } catch (err: any) {
+      alert(`Benchmark execution failed: ${err.message}`);
+    } finally {
+      setBenchmarking(false);
+    }
+  };
+
+  const handleExportAuditTrail = () => {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(auditLog, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `mandate-guard-audit-trail-${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
   };
 
   // AG Grid Column Definitions
@@ -179,7 +205,7 @@ export const DashboardPage: React.FC = () => {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
               onClick={() => setShowGuide(!showGuide)}
               style={{ background: '#ffffff', border: '1px solid #cbd5e1', padding: '0.5rem 0.9rem', fontSize: '0.85rem', color: 'var(--text-secondary)', borderRadius: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
@@ -193,7 +219,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Explainer Box: How to Understand This Dashboard */}
+      {/* Explainer Box */}
       {showGuide && (
         <div className="info-box" style={{ background: '#f8fafc', borderColor: '#cbd5e1', marginBottom: '1.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
@@ -357,6 +383,21 @@ export const DashboardPage: React.FC = () => {
           )}
         </div>
 
+        {/* Simulated Mobile Push Alert Toast if pending exists */}
+        {pendingApprovals.length > 0 && (
+          <div style={{ background: '#fef3c7', border: '1.5px solid #f59e0b', borderRadius: 10, padding: '0.85rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>📱</span>
+            <div>
+              <div style={{ fontWeight: 800, color: '#92400e', fontSize: '0.875rem' }}>
+                Simulated Push Notification Sent to User's Phone (PayPal App)
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#78350f' }}>
+                "Mandate Guard: Your AI Shopper has requested authorization for a purchase exceeding auto-approval limit. Review below."
+              </div>
+            </div>
+          </div>
+        )}
+
         {pendingApprovals.length === 0 ? (
           <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 10, padding: '2rem 1.5rem', textAlign: 'center' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✨</div>
@@ -426,21 +467,84 @@ export const DashboardPage: React.FC = () => {
         )}
       </div>
 
-      {/* SECTION 3: DETERMINISTIC AUDIT LOG */}
+      {/* SECTION 3: LIVE SECURITY BENCHMARK RUNNER */}
+      <div className="card" style={{ border: '2px solid #bfdbfe', background: '#f8fafc' }}>
+        <div className="card-title">
+          <div>
+            <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--paypal-dark)' }}>
+              🛡️ Live Adversarial Red-Team Benchmark Battery
+            </span>
+            <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '0.15rem' }}>
+              Quantitative security proof: runs 120 automated attacks (prompt injections, budget overruns, race conditions)
+            </div>
+          </div>
+          <button
+            className="primary-btn"
+            style={{ fontSize: '0.85rem', padding: '0.5rem 1.1rem' }}
+            onClick={handleRunBenchmark}
+            disabled={benchmarking}
+          >
+            {benchmarking ? 'Executing 120 Attack Tests...' : '▶ Run Live 120-Attack Benchmark'}
+          </button>
+        </div>
+
+        {benchmark && (
+          <div style={{ marginTop: '1rem', background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: 10, padding: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span className="badge badge-allow" style={{ fontSize: '0.85rem', padding: '0.35rem 0.75rem' }}>
+                  ✓ {benchmark.verdict}
+                </span>
+                <strong style={{ color: 'var(--text-primary)', fontSize: '1.05rem' }}>
+                  {benchmark.blocked_attacks} / {benchmark.total_attacks} Attacks Blocked ({benchmark.block_rate_pct}%)
+                </strong>
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Average Latency: <strong style={{ color: 'var(--paypal-blue)' }}>{benchmark.avg_latency_microseconds} µs</strong> (Total {benchmark.total_elapsed_ms} ms)
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', fontSize: '0.8rem' }}>
+              {Object.entries(benchmark.attack_categories).map(([category, count]) => (
+                <div key={category} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.65rem 0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>{category}:</span>
+                  <span style={{ fontWeight: 700, color: 'var(--accent-green)' }}>{count} Blocked</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: '0.85rem', display: 'flex', gap: '1.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <span>✓ Legitimate Accuracy: <strong>{benchmark.legitimate_accuracy_pct}%</strong></span>
+              <span>✓ Monthly Cap Race Prevention: <strong>{benchmark.race_condition_defense ? 'PASSED' : 'FAILED'}</strong></span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 4: DETERMINISTIC AUDIT TRAIL */}
       <div className="card">
         <div className="card-title">
           <div>
-            <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>3. Deterministic Cryptographic Audit Trail</span>
+            <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>4. Deterministic Cryptographic Audit Trail</span>
             <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '0.15rem' }}>
               Full AG Grid log of every purchase evaluation with tamper-evident HMAC verification
             </div>
           </div>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            {auditLog.length} Recorded Events • Click any row for JSON proof
-          </span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+              {auditLog.length} Recorded Events
+            </span>
+            <button
+              onClick={handleExportAuditTrail}
+              style={{ background: '#ffffff', border: '1px solid #cbd5e1', padding: '0.35rem 0.75rem', fontSize: '0.8rem', borderRadius: 6, fontWeight: 600, color: 'var(--paypal-blue)' }}
+              title="Download cryptographic audit trail in JSON format"
+            >
+              📥 Export Audit Trail (.json)
+            </button>
+          </div>
         </div>
 
-        {/* AG Grid without scroll traps: using domLayout="autoHeight" with pagination */}
+        {/* AG Grid without scroll traps */}
         <div className="ag-theme-quartz" style={{ width: '100%', borderRadius: 8, border: '1px solid var(--border-color)' }}>
           <AgGridReact
             theme="legacy"

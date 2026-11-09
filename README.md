@@ -68,6 +68,9 @@ flowchart TD
 - **PayPal Sandbox Orders v2**: OAuth2 token caching, idempotent `PayPal-Request-Id` headers, order creation with `payment_source.paypal.experience_context`, and capture.
 - **Real-Time AG Grid Dashboard**: Live spend meter, pending approval cards, and full audit trail with JSON payload inspection.
 - **Red Team Attack Demo**: Malicious listing (*"Discount Running Socks"*) attempting to hijack the agent to purchase 10 x $100 gift cards is 100% blocked.
+- **Live UI Adversarial Benchmark Runner**: 1-click in-browser test executing 120 attacks and reporting defense percentage, breakdown by attack vector, and latency.
+- **Instant Policy Simulator ("What-If" Sandbox)**: Interactive testbench allowing users to test hypothetical purchase scenarios in 0-second latency without invoking an LLM.
+- **Cryptographic Audit Export**: 1-click download of verified HMAC-SHA256 audit trail in JSON format.
 - **Model Context Protocol (MCP) Server**: FastMCP tools (`get_mandate_status`, `request_purchase`, `list_pending_approvals`) allowing any agent (Claude, ChatGPT) to be governed by Mandate Guard.
 
 ---
@@ -136,7 +139,7 @@ powershell -File scripts/dev.ps1
 
 ## 🧪 Testing & Security Benchmark
 
-### Run Backend Unit Tests (37 Tests)
+### Run Backend Unit Tests (39 Tests)
 ```powershell
 .venv\Scripts\pytest backend/tests -v
 ```
@@ -172,6 +175,21 @@ Concurrency / Race Prevention    : PASS (Reserved spend stops budget drain)
 3. Test **Normal Purchase**: Click *"Find me running shoes under $60"*. The agent buys Decathlon shoes for $59.00 -> Guard emits **ALLOW** -> Generates a PayPal checkout link.
 4. Test **Human Escalation**: Click *"Buy Nike Premium Marathon Shoes"*. Total is $119.00 -> Guard emits **ESCALATE** -> Check [Dashboard](http://localhost:5173/dashboard) to approve or reject.
 5. Test **Red Team Injection Attack**: Click *"🚨 Red Team: Poisoned Socks Listing"*. The agent encounters the poisoned socks listing and attempts to order $1,000 of gift cards from QuickCards -> Guard immediately **BLOCKS** the attack with `CATEGORY_BLOCKED`, `OVER_TRANSACTION_CAP`, `QUANTITY_EXCEEDED`, and `MERCHANT_NOT_ALLOWED`. PayPal is never contacted.
+
+---
+
+## 📹 2-Minute Demo Video Recording Script
+
+Use this pitch script when recording your submission video for the hackathon:
+
+| Time | Screen | Audio / Narration |
+| :--- | :--- | :--- |
+| **0:00 - 0:25** | Intro slide / Camera | *"Autonomous AI shopping agents are here, but giving an LLM direct credit card or PayPal credentials is terrifying. A single hallucination or indirect prompt injection in a seller's product description can wipe out your bank account. That’s why we built Mandate Guard."* |
+| **0:25 - 0:45** | `1. Set Rules` | *"Users define their budget in plain English: 'Spend up to $150 on running gear, only Nike and Adidas, auto-approve under $60'. Gemini compiles it into a strict policy, and Mandate Guard cryptographically signs it with HMAC-SHA256."* |
+| **0:45 - 1:15** | `2. AI Shopper` | *"When the AI goes shopping, Mandate Guard enforces 3 outcomes deterministically: First, a $59 pair of shoes fits under our $60 limit — auto-approved! It instantly generates an official PayPal Sandbox order. Second, a $119 pair of marathon shoes exceeds our auto-approve limit — Guard safely pauses it and sends it to our Human Approval Queue."* |
+| **1:15 - 1:35** | `Prompt Injection Trap` | *"Now the real test: Red Team prompt injection. The agent reads a poisoned product listing that commands it to buy $1,000 of gift cards. The hijacked agent obeys, but Mandate Guard intercepts it outside the LLM and blocks it 100%! Zero dollars lost. PayPal was never contacted."* |
+| **1:35 - 1:50** | `3. Dashboard` | *"On the Dashboard, we see our live spend telemetry with reserved spend tracking to prevent race conditions. We can approve the pending order with 1 click to open PayPal, or run our live 120-attack benchmark demonstrating 100% defense at 60 microseconds latency."* |
+| **1:50 - 2:00** | Conclusion | *"Mandate Guard brings the consent, policy, and cryptographic auditability needed to make autonomous AI commerce safe for millions of PayPal users."* |
 
 ---
 
