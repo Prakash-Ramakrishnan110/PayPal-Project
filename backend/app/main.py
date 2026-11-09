@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.database import init_db
-from app.routes import mandates, paypal_debug
+from app.routes import agent, guard, mandates, paypal_debug
 
 
 @asynccontextmanager
@@ -37,6 +37,8 @@ app.add_middleware(
 
 # Include Routers
 app.include_router(mandates.router)
+app.include_router(guard.router)
+app.include_router(agent.router)
 app.include_router(paypal_debug.router)
 
 
