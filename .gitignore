@@ -1,6 +1,4 @@
 # Environment & Secrets
-.env
-.env.local
 .env.*.local
 
 # Python
@@ -33,9 +31,9 @@ dist/
 # OS & Editors
 .DS_Store
 Thumbs.db
-.vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea/
 .playwright-mcp/
 
+config.bat

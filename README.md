@@ -85,8 +85,8 @@ flowchart TD
 ### 2. Setup Environment
 ```powershell
 # Clone repository
-git clone https://github.com/Prakash-Ramakrishnan110/mandate-guard.git
-cd mandate-guard
+git clone https://github.com/Prakash-Ramakrishnan110/PayPal-Project.git
+cd PayPal-Project
 
 # Copy .env.example
 cp .env.example .env
