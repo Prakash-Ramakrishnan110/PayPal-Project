@@ -158,3 +158,4 @@ def get_product(product_id: str) -> Optional[Dict[str, Any]]:
         if p["id"] == product_id:
             return dict(p)
     return None
+

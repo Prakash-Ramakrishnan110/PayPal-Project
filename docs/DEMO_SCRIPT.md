@@ -100,3 +100,4 @@ As autonomous AI agents gain the capability to make real financial purchases, in
 - Vaulted PayPal payment methods for verified recurring merchants.
 - Multi-signature family / team spending mandates.
 - Integration with major agentic frameworks (LangChain, AutoGen, CrewAI) via our MCP server.
+

@@ -23,3 +23,4 @@ async def run_agent(body: AgentRunRequest) -> Dict[str, Any]:
         return result
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Shopping agent error: {str(exc)}")
+

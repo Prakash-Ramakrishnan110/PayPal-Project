@@ -111,3 +111,4 @@ def create_mandate_from_draft(draft: MandateDraft, user_id: str = "demo-user") -
     # Sign the mandate deterministically
     mandate.signature = sign(mandate)
     return mandate
+

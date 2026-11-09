@@ -39,3 +39,4 @@ def test_adversarial_security_battery():
     for req in adversarial_requests:
         decision = evaluate(mandate, req, spent_this_month_cents=0)
         assert decision.decision == "BLOCK", f"Failed to block {req.item_name}"
+

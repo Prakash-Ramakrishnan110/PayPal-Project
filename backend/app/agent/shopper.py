@@ -196,3 +196,4 @@ async def run_shopping_agent(task: str, max_iterations: int = 6) -> Dict[str, An
         "purchases": purchases,
         "success": True,
     }
+

@@ -165,3 +165,4 @@ async def test_escalate_then_approve_creates_one_order(active_mandate: Mandate, 
         # 3. Trying to approve again must fail (idempotency check)
         with pytest.raises(ValueError):
             await approve_pending_purchase(approval_id, session=test_session)
+

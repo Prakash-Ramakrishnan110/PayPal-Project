@@ -124,3 +124,4 @@ def revoke_mandate(mandate_id: str, session: Session = Depends(get_session)):
         session.refresh(mandate)
 
     return mandate
+

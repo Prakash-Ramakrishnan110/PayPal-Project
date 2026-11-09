@@ -43,3 +43,4 @@ services:
           type: web
           name: mandate-guard-api
           property: host
+

@@ -11,7 +11,7 @@ export const PayPalReturn: React.FC = () => {
 
   useEffect(() => {
     if (!orderId) {
-      setError('No PayPal order token provided in URL');
+      setError('No PayPal order token provided in URL query string.');
       setCapturing(false);
       return;
     }
@@ -31,25 +31,27 @@ export const PayPalReturn: React.FC = () => {
   }, [orderId]);
 
   return (
-    <div style={{ maxWidth: '600px', margin: '4rem auto', textAlign: 'center' }}>
-      <div className="card" style={{ padding: '2.5rem' }}>
+    <div style={{ maxWidth: '640px', margin: '4rem auto', textAlign: 'center' }}>
+      <div className="card" style={{ padding: '3rem 2.5rem', boxShadow: 'var(--shadow-md)' }}>
         {capturing && (
           <div>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⏳</div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Capturing PayPal Payment...</h2>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+              Capturing PayPal Sandbox Payment...
+            </h2>
             <p style={{ color: 'var(--text-secondary)' }}>
-              Finalizing transaction with PayPal Sandbox for order <code className="fingerprint">{orderId}</code>
+              Finalizing transaction with PayPal Sandbox Orders v2 for order <code className="fingerprint">{orderId}</code>
             </p>
           </div>
         )}
 
         {error && (
           <div>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>❌</div>
-            <h2 style={{ fontSize: '1.5rem', color: 'var(--accent-red)', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-red)', marginBottom: '0.5rem' }}>
               Payment Capture Failed
             </h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{error}</p>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.75rem' }}>{error}</p>
             <Link to="/dashboard" className="primary-btn">
               Return to Dashboard
             </Link>
@@ -58,30 +60,30 @@ export const PayPalReturn: React.FC = () => {
 
         {result && (
           <div>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>✅</div>
-            <h2 style={{ fontSize: '1.5rem', color: 'var(--accent-green)', marginBottom: '0.5rem' }}>
-              PayPal Payment Completed!
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-green)', marginBottom: '0.5rem' }}>
+              PayPal Payment Successfully Completed!
             </h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-              The purchase was settled in the PayPal Sandbox and committed to the Mandate Guard immutable audit log.
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+              The purchase was settled through PayPal Sandbox and committed to the Mandate Guard immutable audit trail.
             </p>
 
-            <div style={{ background: 'var(--bg-secondary)', padding: '1rem', borderRadius: 8, marginBottom: '1.5rem', textAlign: 'left', fontSize: '0.9rem' }}>
-              <div style={{ marginBottom: '0.4rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Order ID:</span>{' '}
-                <span className="fingerprint">{result.order_id}</span>
+            <div style={{ background: '#f8fafc', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: 10, marginBottom: '1.75rem', textAlign: 'left', fontSize: '0.9rem' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Order ID:</span>{' '}
+                <span className="fingerprint" style={{ color: 'var(--paypal-blue)', background: '#eff6ff' }}>{result.order_id}</span>
               </div>
-              <div style={{ marginBottom: '0.4rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Capture ID:</span>{' '}
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Capture ID:</span>{' '}
                 <span className="fingerprint">{result.capture_id}</span>
               </div>
-              <div style={{ marginBottom: '0.4rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Status:</span>{' '}
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Status:</span>{' '}
                 <strong style={{ color: 'var(--accent-green)' }}>{result.status}</strong>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>Settled Amount:</span>{' '}
-                <strong style={{ color: '#fff' }}>${(result.amount_cents / 100).toFixed(2)} USD</strong>
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Settled Amount:</span>{' '}
+                <strong style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>${(result.amount_cents / 100).toFixed(2)} USD</strong>
               </div>
             </div>
 

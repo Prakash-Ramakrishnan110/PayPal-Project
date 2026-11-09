@@ -30,11 +30,11 @@ export const MandateBanner: React.FC<MandateBannerProps> = ({ mandate, onMandate
 
   if (!mandate || mandate.status !== 'active') {
     return (
-      <div className="mandate-banner" style={{ borderLeft: '4px solid var(--accent-amber)' }}>
+      <div className="mandate-banner" style={{ borderLeft: '4px solid var(--accent-amber)', background: 'var(--accent-amber-bg)' }}>
         <div className="banner-content">
           <span className="status-pill status-empty">NO ACTIVE MANDATE</span>
-          <span style={{ color: 'var(--text-secondary)' }}>
-            Agent cannot authorize purchases until a signed spending mandate is compiled and activated.
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
+            Autonomous agent cannot authorize purchases until a signed spending mandate is compiled and activated.
           </span>
         </div>
       </div>
@@ -42,20 +42,20 @@ export const MandateBanner: React.FC<MandateBannerProps> = ({ mandate, onMandate
   }
 
   return (
-    <div className="mandate-banner" style={{ borderLeft: '4px solid var(--accent-green)' }}>
+    <div className="mandate-banner" style={{ borderLeft: '4px solid var(--accent-green)', background: '#ffffff' }}>
       <div className="banner-content">
         <span className="status-pill status-active">
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-green)' }} />
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent-green)' }} />
           MANDATE ACTIVE
         </span>
-        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+        <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
           "{mandate.natural_language}"
         </span>
-        <span style={{ color: 'var(--text-muted)' }}>|</span>
+        <span style={{ color: '#cbd5e1' }}>|</span>
         <span style={{ color: 'var(--text-secondary)' }}>
-          Cap: <strong style={{ color: '#fff' }}>${(mandate.monthly_cap_cents / 100).toFixed(2)}</strong> (Auto-approve &lt; ${(mandate.auto_approve_under_cents / 100).toFixed(2)})
+          Monthly Cap: <strong style={{ color: 'var(--text-primary)' }}>${(mandate.monthly_cap_cents / 100).toFixed(2)}</strong> (Auto-approve &lt; ${(mandate.auto_approve_under_cents / 100).toFixed(2)})
         </span>
-        <span className="fingerprint" title={`Full HMAC: ${mandate.signature}`}>
+        <span className="fingerprint" title={`Full HMAC-SHA256: ${mandate.signature}`} style={{ background: '#f8fafc', color: 'var(--paypal-blue)' }}>
           HMAC: {mandate.signature.slice(0, 12)}...
         </span>
       </div>

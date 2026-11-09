@@ -158,3 +158,4 @@ def get_guard_stats(session: Session = Depends(get_session)):
         "escalated_count": escalated_count,
         "blocked_count": blocked_count,
     }
+

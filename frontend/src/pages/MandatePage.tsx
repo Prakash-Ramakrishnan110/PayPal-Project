@@ -55,18 +55,18 @@ export const MandatePage: React.FC<MandatePageProps> = ({ onMandateUpdated }) =>
 
   return (
     <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+      <div style={{ marginBottom: '1.75rem' }}>
+        <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.4rem', letterSpacing: '-0.025em' }}>
           Spending Mandate Compiler
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-          Type your spending policy in natural language. Gemini compiles it into a structured, cryptographically signed mandate enforced deterministically outside the LLM.
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '850px' }}>
+          Define spending constraints in plain English. Gemini translates them into a tamper-evident, cryptographically signed mandate enforced deterministically outside the LLM.
         </p>
       </div>
 
       <div className="card">
-        <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
-          Natural Language Spending Rule:
+        <label style={{ display: 'block', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.6rem' }}>
+          Natural Language Spending Policy:
         </label>
         <textarea
           className="textarea-input"
@@ -75,9 +75,9 @@ export const MandatePage: React.FC<MandatePageProps> = ({ onMandateUpdated }) =>
           placeholder="e.g. Spend up to $150 this month on running gear, auto-approve under $60..."
         />
 
-        <div style={{ marginTop: '0.75rem' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            QUICK PRESETS:
+        <div style={{ marginTop: '1rem' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>
+            CLICK TO LOAD EXAMPLE POLICY:
           </span>
           <div className="chip-container">
             {PRESET_CHIPS.map((chip, idx) => (
@@ -90,89 +90,94 @@ export const MandatePage: React.FC<MandatePageProps> = ({ onMandateUpdated }) =>
 
         <div className="btn-group">
           <button className="primary-btn" onClick={handleCompile} disabled={compiling || !ruleText.trim()}>
-            {compiling ? 'Compiling with Gemini...' : 'Compile Mandate (Gemini)'}
+            {compiling ? 'Compiling with Gemini AI...' : 'Compile Mandate (Gemini)'}
           </button>
         </div>
       </div>
 
       {error && (
-        <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--accent-red)', borderRadius: 8, color: '#fca5a5', marginBottom: '1.5rem' }}>
-          <strong>Error:</strong> {error}
+        <div style={{ padding: '1.25rem', background: 'var(--accent-red-bg)', border: '1px solid var(--accent-red-border)', borderRadius: 10, color: 'var(--accent-red)', marginBottom: '1.5rem', fontWeight: 500 }}>
+          <strong style={{ fontWeight: 700 }}>Compilation Error:</strong> {error}
         </div>
       )}
 
       {/* Compiled Draft Card */}
       {draft && (
-        <div className="card" style={{ borderColor: 'var(--accent-blue)' }}>
+        <div className="card" style={{ border: '2px solid #bfdbfe', background: '#ffffff', boxShadow: 'var(--shadow-md)' }}>
           <div className="card-title">
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <span className="badge badge-allow">Compiled Draft</span>
-              <span>Mandate Preview</span>
+              <span style={{ color: 'var(--text-primary)' }}>Mandate Specification</span>
             </span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Awaiting Cryptographic Signature
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+              Step 2 of 2: Review &amp; Cryptographically Sign
             </span>
           </div>
 
-          <p style={{ fontSize: '1.05rem', color: '#fff', marginBottom: '1rem', fontStyle: 'italic' }}>
-            "{draft.summary}"
-          </p>
+          <div style={{ background: '#f8fafc', padding: '1rem 1.25rem', borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--paypal-blue)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.25rem' }}>
+              Summary Restatement:
+            </span>
+            <p style={{ fontSize: '1.05rem', color: 'var(--text-primary)', fontWeight: 500 }}>
+              "{draft.summary}"
+            </p>
+          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
-            <div style={{ background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: 6, border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>MONTHLY CAP</div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#fff' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ background: '#ffffff', padding: '1rem', borderRadius: 8, border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MONTHLY CAP</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
                 ${draft.monthly_cap_dollars.toFixed(2)}
               </div>
             </div>
 
-            <div style={{ background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: 6, border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>PER-TRANSACTION CAP</div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#fff' }}>
+            <div style={{ background: '#ffffff', padding: '1rem', borderRadius: 8, border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>PER-TRANSACTION CAP</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
                 ${draft.per_transaction_cap_dollars.toFixed(2)}
               </div>
             </div>
 
-            <div style={{ background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: 6, border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>AUTO-APPROVE UNDER</div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--accent-green)' }}>
+            <div style={{ background: '#ffffff', padding: '1rem', borderRadius: 8, border: '1px solid var(--accent-green-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-green)' }}>AUTO-APPROVE UNDER</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-green)', marginTop: '0.25rem' }}>
                 ${draft.auto_approve_under_dollars.toFixed(2)}
               </div>
             </div>
 
-            <div style={{ background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: 6, border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>EXPIRATION</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff' }}>
+            <div style={{ background: '#ffffff', padding: '1rem', borderRadius: 8, border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>VALIDITY</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
                 {draft.expires_in_days} Days
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
-            <div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>
-                ALLOWED MERCHANTS:
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
+            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                ALLOWED MERCHANTS
               </span>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 {draft.allowed_merchants.length > 0 ? (
                   draft.allowed_merchants.map((m, i) => (
-                    <span key={i} className="fingerprint" style={{ color: 'var(--accent-cyan)' }}>
+                    <span key={i} className="fingerprint" style={{ color: 'var(--paypal-blue)', background: '#ffffff' }}>
                       {m}
                     </span>
                   ))
                 ) : (
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Any non-blocked</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Any non-blocked merchant</span>
                 )}
               </div>
             </div>
 
-            <div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>
-                BLOCKED CATEGORIES (STRICT):
+            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                BLOCKED CATEGORIES (STRICT REJECTION)
               </span>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 {draft.blocked_categories.map((c, i) => (
-                  <span key={i} className="fingerprint" style={{ color: 'var(--accent-red)' }}>
+                  <span key={i} className="fingerprint" style={{ color: 'var(--accent-red)', background: '#ffffff' }}>
                     {c}
                   </span>
                 ))}
@@ -181,11 +186,11 @@ export const MandatePage: React.FC<MandatePageProps> = ({ onMandateUpdated }) =>
           </div>
 
           {draft.assumptions.length > 0 && (
-            <div style={{ background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: 6, marginBottom: '1.25rem', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--accent-amber)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
-                Compiler Assumptions &amp; Defaults Applied:
+            <div style={{ background: 'var(--accent-amber-bg)', border: '1px solid var(--accent-amber-border)', padding: '1rem 1.25rem', borderRadius: 8, marginBottom: '1.5rem' }}>
+              <span style={{ color: 'var(--accent-amber)', fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: '0.35rem' }}>
+                Compiler Conservative Defaults &amp; Assumptions:
               </span>
-              <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
+              <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                 {draft.assumptions.map((a, i) => (
                   <li key={i}>{a}</li>
                 ))}
@@ -195,22 +200,26 @@ export const MandatePage: React.FC<MandatePageProps> = ({ onMandateUpdated }) =>
 
           <div className="btn-group">
             <button className="success-btn" onClick={handleActivate} disabled={activating}>
-              {activating ? 'Signing & Activating...' : 'Sign with HMAC-SHA256 & Activate'}
+              {activating ? 'Signing with HMAC-SHA256...' : 'Sign with HMAC-SHA256 & Activate Mandate'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Success Banner */}
+      {/* Success Notification */}
       {successMandate && (
-        <div style={{ padding: '1.25rem', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--accent-green)', borderRadius: 8, marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <span className="badge badge-allow">Mandate Active</span>
-            <strong style={{ color: '#fff' }}>Mandate Successfully Signed &amp; Activated!</strong>
+        <div style={{ padding: '1.25rem', background: 'var(--accent-green-bg)', border: '1.5px solid var(--accent-green-border)', borderRadius: 10, marginBottom: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
+            <span className="badge badge-allow">Active &amp; Enforced</span>
+            <strong style={{ color: 'var(--accent-green)', fontSize: '1rem' }}>
+              Mandate Successfully Signed &amp; Activated!
+            </strong>
           </div>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
             Cryptographic HMAC-SHA256 Signature:{' '}
-            <span className="fingerprint">{successMandate.signature}</span>
+            <span className="fingerprint" style={{ background: '#ffffff', color: 'var(--text-primary)' }}>
+              {successMandate.signature}
+            </span>
           </p>
         </div>
       )}
