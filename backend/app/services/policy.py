@@ -56,21 +56,27 @@ def evaluate(
     if request.currency.upper() != mandate.currency.upper():
         block_reasons.append("CURRENCY_MISMATCH")
 
-    # 4. Blocked categories check (case-insensitive)
-    normalized_blocked = [c.lower() for c in mandate.blocked_categories]
-    if request.category.lower() in normalized_blocked:
+    def _norm(val: str) -> str:
+        return val.lower().replace("_", " ").replace("-", " ").strip()
+
+    req_cat = _norm(request.category)
+    req_merch = _norm(request.merchant)
+
+    # 4. Blocked categories check (case-insensitive & space/underscore insensitive)
+    normalized_blocked = [_norm(c) for c in mandate.blocked_categories]
+    if req_cat in normalized_blocked:
         block_reasons.append("CATEGORY_BLOCKED")
 
     # 5. Allowed categories check (if non-empty)
     if mandate.allowed_categories:
-        normalized_allowed = [c.lower() for c in mandate.allowed_categories]
-        if request.category.lower() not in normalized_allowed:
+        normalized_allowed = [_norm(c) for c in mandate.allowed_categories]
+        if req_cat not in normalized_allowed:
             block_reasons.append("CATEGORY_NOT_ALLOWED")
 
     # 6. Allowed merchants check (if non-empty)
     if mandate.allowed_merchants:
-        normalized_merchants = [m.lower() for m in mandate.allowed_merchants]
-        if request.merchant.lower() not in normalized_merchants:
+        normalized_merchants = [_norm(m) for m in mandate.allowed_merchants]
+        if req_merch not in normalized_merchants:
             block_reasons.append("MERCHANT_NOT_ALLOWED")
 
     # 7. Quantity check

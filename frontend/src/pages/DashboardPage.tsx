@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, RowClickedEvent } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -13,6 +14,7 @@ export const DashboardPage: React.FC = () => {
   const [auditLog, setAuditLog] = useState<AuditEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<AuditEvent | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showGuide, setShowGuide] = useState(true);
 
   const fetchData = async () => {
     try {
@@ -69,7 +71,7 @@ export const DashboardPage: React.FC = () => {
       {
         headerName: 'Time',
         field: 'timestamp',
-        width: 160,
+        width: 130,
         sort: 'desc',
         valueFormatter: (params) => {
           if (!params.value) return '';
@@ -81,49 +83,49 @@ export const DashboardPage: React.FC = () => {
         },
       },
       {
-        headerName: 'Decision',
+        headerName: 'Guard Verdict',
         field: 'decision',
         width: 140,
         cellRenderer: (params: any) => {
           const val = params.value;
           if (val === 'ALLOW') {
-            return <span className="badge badge-allow">ALLOW</span>;
+            return <span className="badge badge-allow">🟢 ALLOW</span>;
           }
           if (val === 'ESCALATE') {
-            return <span className="badge badge-escalate">ESCALATE</span>;
+            return <span className="badge badge-escalate">🟡 ESCALATE</span>;
           }
           if (val === 'BLOCK') {
-            return <span className="badge badge-block">BLOCK</span>;
+            return <span className="badge badge-block">🔴 BLOCK</span>;
           }
           return <span style={{ color: 'var(--text-muted)' }}>{val || '-'}</span>;
         },
       },
       {
-        headerName: 'Item',
+        headerName: 'Purchased Item',
         field: 'item_name',
         width: 220,
         filter: 'agTextColumnFilter',
       },
       {
-        headerName: 'Merchant',
+        headerName: 'Store / Merchant',
         field: 'merchant',
         width: 150,
         filter: 'agTextColumnFilter',
       },
       {
-        headerName: 'Amount',
+        headerName: 'Price',
         field: 'amount_cents',
-        width: 130,
+        width: 120,
         valueFormatter: (params) => {
           if (params.value === undefined || params.value === null) return '-';
           return `$${(params.value / 100).toFixed(2)}`;
         },
       },
       {
-        headerName: 'Reason Codes',
+        headerName: 'Why Guard Decided This (Reason Codes)',
         field: 'reason_codes',
         flex: 1,
-        minWidth: 230,
+        minWidth: 260,
         valueFormatter: (params) => {
           if (!params.value || !Array.isArray(params.value)) return '';
           return params.value.join(', ');
@@ -134,7 +136,7 @@ export const DashboardPage: React.FC = () => {
         field: 'paypal_order_id',
         width: 210,
         cellRenderer: (params: any) => {
-          if (!params.value) return <span style={{ color: 'var(--text-muted)' }}>-</span>;
+          if (!params.value) return <span style={{ color: 'var(--text-muted)' }}>Not Billed</span>;
           return (
             <span className="fingerprint" style={{ color: 'var(--paypal-blue)', background: '#eff6ff', borderColor: '#bfdbfe' }}>
               {params.value}
@@ -158,43 +160,120 @@ export const DashboardPage: React.FC = () => {
   const cap = stats?.monthly_cap_cents || 15000;
   const spentPct = Math.min(100, Math.round((spent / (cap || 1)) * 100));
   const reservedPct = Math.min(100 - spentPct, Math.round((reserved / (cap || 1)) * 100));
+  const availableCents = Math.max(0, cap - (spent + reserved));
 
   return (
-    <div>
+    <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      {/* Page Header */}
       <div style={{ marginBottom: '1.75rem' }}>
-        <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.4rem', letterSpacing: '-0.025em' }}>
-          Real-Time Spending &amp; Audit Dashboard
-        </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '850px' }}>
-          Live budget telemetry, human-in-the-loop approvals queue, and immutable AG Grid cryptographic audit log.
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--paypal-blue)', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <span>Step 3 of 3</span> • Control Center
+            </div>
+            <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.35rem', letterSpacing: '-0.025em' }}>
+              Dashboard &amp; Human Approval Center
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.975rem', maxWidth: '850px' }}>
+              Real-time budget telemetry, human-in-the-loop approvals for large purchases, and immutable audit logs.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              onClick={() => setShowGuide(!showGuide)}
+              style={{ background: '#ffffff', border: '1px solid #cbd5e1', padding: '0.5rem 0.9rem', fontSize: '0.85rem', color: 'var(--text-secondary)', borderRadius: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              {showGuide ? 'Hide Help Guide ✕' : 'ℹ️ How to Use This Dashboard'}
+            </button>
+            <Link to="/agent" className="primary-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+              🤖 Launch AI Shopper ➡️
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Spend Meter & Stats Grid */}
+      {/* Explainer Box: How to Understand This Dashboard */}
+      {showGuide && (
+        <div className="info-box" style={{ background: '#f8fafc', borderColor: '#cbd5e1', marginBottom: '1.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
+            <span style={{ fontWeight: 800, color: 'var(--paypal-dark)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              💡 Quick Guide: Understanding the 3 Sections Below
+            </span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Auto-updating live</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginTop: '0.75rem' }}>
+            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '1rem' }}>
+              <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ background: '#eff6ff', color: 'var(--paypal-blue)', borderRadius: '50%', width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>1</span>
+                Monthly Spend Telemetry
+              </div>
+              <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                Shows how much money the AI has spent vs your maximum cap. <strong>Reserved</strong> means money on hold for pending human approvals so the agent can never exceed your budget.
+              </p>
+            </div>
+
+            <div style={{ background: '#ffffff', border: '1px solid #fde68a', borderRadius: 8, padding: '1rem' }}>
+              <div style={{ fontWeight: 700, color: '#b45309', fontSize: '0.9rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ background: '#fffbeb', color: '#d97706', borderRadius: '50%', width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>2</span>
+                Human Approval Queue
+              </div>
+              <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                Items that cost <strong>more than your auto-approve limit ($60.00)</strong> pause here. They will NEVER be charged unless you click <strong>"Approve"</strong> to open PayPal Sandbox.
+              </p>
+            </div>
+
+            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '1rem' }}>
+              <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ background: '#f1f5f9', color: 'var(--text-primary)', borderRadius: '50%', width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>3</span>
+                Deterministic Audit Trail
+              </div>
+              <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                An immutable log of every action: 🟢 <strong>ALLOW</strong> (checked out), 🟡 <strong>ESCALATE</strong> (sent to you), or 🔴 <strong>BLOCK</strong> (stopped cold). Click any row to view cryptographic proof.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 1: SPEND METER & STATS */}
       <div className="card">
         <div className="card-title">
-          <span>Monthly Spend Telemetry</span>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            Live Polling (3s)
+          <div>
+            <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>1. Monthly Budget &amp; Spend Telemetry</span>
+            <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '0.15rem' }}>
+              Enforced in integer cents outside the LLM to prevent overspending
+            </div>
+          </div>
+          <span className="fingerprint" style={{ color: 'var(--accent-green)', background: '#ecfdf5', borderColor: '#a7f3d0' }}>
+            ● Live Polling (Every 3s)
           </span>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        {/* Big numbers row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <span style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.025em' }}>
-              ${((spent + reserved) / 100).toFixed(2)}
-            </span>
-            <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginLeft: '0.4rem', fontWeight: 600 }}>
-              / ${(cap / 100).toFixed(2)} USD
-            </span>
-            {reserved > 0 && (
-              <span style={{ fontSize: '0.85rem', color: 'var(--accent-amber)', marginLeft: '0.75rem', fontWeight: 600 }}>
-                (${ (reserved / 100).toFixed(2) } reserved pending)
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              TOTAL COMMITTED SPEND
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginTop: '0.2rem' }}>
+              <span style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.025em' }}>
+                ${((spent + reserved) / 100).toFixed(2)}
               </span>
-            )}
+              <span style={{ fontSize: '1.25rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                / ${(cap / 100).toFixed(2)} USD Monthly Cap
+              </span>
+            </div>
           </div>
-          <div style={{ color: 'var(--accent-green)', fontWeight: 700, fontSize: '1rem' }}>
-            ${(Math.max(0, cap - (spent + reserved)) / 100).toFixed(2)} Available Budget
+
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              REMAINING BUDGET
+            </div>
+            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: availableCents > 0 ? 'var(--accent-green)' : 'var(--accent-red)', marginTop: '0.2rem' }}>
+              ${(availableCents / 100).toFixed(2)} USD
+            </div>
           </div>
         </div>
 
@@ -203,7 +282,7 @@ export const DashboardPage: React.FC = () => {
           <div
             style={{
               width: `${spentPct}%`,
-              background: 'linear-gradient(90deg, #10b981, #06b6d4)',
+              background: '#059669',
               transition: 'width 0.4s ease',
             }}
             title={`Settled Spend: $${(spent / 100).toFixed(2)}`}
@@ -211,91 +290,130 @@ export const DashboardPage: React.FC = () => {
           <div
             style={{
               width: `${reservedPct}%`,
-              background: 'linear-gradient(90deg, #f59e0b, #d97706)',
+              background: '#f59e0b',
               transition: 'width 0.4s ease',
             }}
-            title={`Reserved Pending: $${(reserved / 100).toFixed(2)}`}
+            title={`Reserved Pending Approvals: $${(reserved / 100).toFixed(2)}`}
           />
         </div>
 
-        <div className="stats-grid" style={{ marginTop: '1.5rem', marginBottom: 0 }}>
-          <div className="stat-card">
-            <div className="stat-label">ALLOWED PURCHASES</div>
+        {/* Legend for the progress bar */}
+        <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: '#059669', display: 'inline-block' }} />
+            <span>Settled (Paid via PayPal): <strong>${(spent / 100).toFixed(2)}</strong></span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: '#f59e0b', display: 'inline-block' }} />
+            <span>Reserved (Awaiting Approval/Capture): <strong>${(reserved / 100).toFixed(2)}</strong></span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: '#e2e8f0', display: 'inline-block' }} />
+            <span>Available to Spend: <strong>${(availableCents / 100).toFixed(2)}</strong></span>
+          </div>
+        </div>
+
+        {/* 3 Metric Cards */}
+        <div className="stats-grid" style={{ marginBottom: 0 }}>
+          <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
+            <div className="stat-label">🟢 ALLOWED PURCHASES</div>
             <div className="stat-value" style={{ color: 'var(--accent-green)' }}>
               {stats?.allowed_count || 0}
             </div>
+            <div className="stat-desc">Auto-approved under threshold limit</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-label">ESCALATED TO HUMAN</div>
+
+          <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-amber)' }}>
+            <div className="stat-label">🟡 ESCALATED TO HUMAN</div>
             <div className="stat-value" style={{ color: 'var(--accent-amber)' }}>
               {stats?.escalated_count || 0}
             </div>
+            <div className="stat-desc">Paused for your manual approval</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-label">BLOCKED ATTACKS / LIMITS</div>
+
+          <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-red)' }}>
+            <div className="stat-label">🔴 BLOCKED ATTEMPTS</div>
             <div className="stat-value" style={{ color: 'var(--accent-red)' }}>
               {stats?.blocked_count || 0}
             </div>
+            <div className="stat-desc">Prompt injections &amp; cap violations</div>
           </div>
         </div>
       </div>
 
-      {/* Pending Approvals Panel */}
+      {/* SECTION 2: HUMAN APPROVAL QUEUE */}
       <div className="card">
         <div className="card-title">
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span>Human Approval Queue (Escalated by Policy Engine)</span>
-            {pendingApprovals.length > 0 && (
-              <span className="badge badge-escalate">{pendingApprovals.length} PENDING</span>
-            )}
-          </span>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            Purchases above auto-approval threshold
-          </span>
+          <div>
+            <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>2. Human Approval Queue (Escalated Orders)</span>
+            <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '0.15rem' }}>
+              Purchases exceeding your auto-approval threshold ($60.00) require your confirmation
+            </div>
+          </div>
+          {pendingApprovals.length > 0 && (
+            <span className="badge badge-escalate">
+              {pendingApprovals.length} ACTION REQUIRED
+            </span>
+          )}
         </div>
 
         {pendingApprovals.length === 0 ? (
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.95rem', padding: '1rem 0' }}>
-            No pending approvals. Purchases within auto-approve limits proceed straight to PayPal.
+          <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 10, padding: '2rem 1.5rem', textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✨</div>
+            <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+              No Pending Orders in Approval Queue
+            </h4>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '520px', margin: '0 auto 1rem auto' }}>
+              When the AI shopper selects an item above your auto-approval threshold (e.g. $119.00 Marathon Shoes), it will pause here for your 1-click authorization before any payment happens.
+            </p>
+            <Link to="/agent" className="primary-btn" style={{ fontSize: '0.85rem', padding: '0.45rem 1rem' }}>
+              Test an Escalated Purchase in Agent Demo ➡️
+            </Link>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.25rem' }}>
             {pendingApprovals.map((p) => (
               <div
                 key={p.id}
                 style={{
                   background: '#ffffff',
-                  border: '1.5px solid var(--accent-amber-border)',
-                  borderRadius: 10,
-                  padding: '1.25rem',
+                  border: '2px solid var(--accent-amber-border)',
+                  borderRadius: 12,
+                  padding: '1.4rem',
                   boxShadow: 'var(--shadow-sm)',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                   <div>
-                    <h4 style={{ color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 700 }}>{p.item_name}</h4>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Merchant: <strong>{p.merchant}</strong></span>
+                    <span className="badge badge-escalate" style={{ marginBottom: '0.4rem' }}>
+                      🟡 Needs Your Approval
+                    </span>
+                    <h4 style={{ color: 'var(--text-primary)', fontSize: '1.15rem', fontWeight: 800 }}>{p.item_name}</h4>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Store: <strong>{p.merchant}</strong></span>
                   </div>
-                  <span style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--accent-amber)' }}>
-                    ${(p.amount_cents / 100).toFixed(2)}
-                  </span>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-amber)' }}>
+                      ${(p.amount_cents / 100).toFixed(2)}
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>USD</span>
+                  </div>
                 </div>
 
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                  Reason: Exceeds auto-approve threshold. Requires human authorization to generate PayPal checkout order.
+                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '0.75rem', fontSize: '0.825rem', color: '#92400e', marginBottom: '1.25rem' }}>
+                  <strong>Why review needed?</strong> Price exceeds your auto-approve threshold ($60.00). Approving will create a live PayPal Sandbox checkout session.
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.6rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <button
                     className="success-btn"
-                    style={{ flex: 1, padding: '0.5rem', fontSize: '0.85rem' }}
+                    style={{ flex: 1, padding: '0.65rem 0.75rem', fontSize: '0.875rem' }}
                     onClick={() => handleApprove(p.id)}
                     disabled={actionLoading === p.id}
                   >
-                    {actionLoading === p.id ? 'Processing...' : 'Approve & Open PayPal'}
+                    {actionLoading === p.id ? 'Connecting to PayPal...' : '✓ Approve & Open PayPal'}
                   </button>
                   <button
-                    style={{ background: '#ffffff', color: '#dc2626', border: '1px solid #fca5a5', padding: '0.5rem 1rem', fontSize: '0.85rem', borderRadius: 8, fontWeight: 600 }}
+                    style={{ background: '#ffffff', color: '#dc2626', border: '1.5px solid #fca5a5', padding: '0.65rem 1rem', fontSize: '0.875rem', borderRadius: 8, fontWeight: 700 }}
                     onClick={() => handleReject(p.id)}
                     disabled={actionLoading === p.id}
                   >
@@ -308,29 +426,37 @@ export const DashboardPage: React.FC = () => {
         )}
       </div>
 
-      {/* AG Grid Audit Log */}
+      {/* SECTION 3: DETERMINISTIC AUDIT LOG */}
       <div className="card">
         <div className="card-title">
-          <span>Deterministic Audit Trail (AG Grid Community)</span>
+          <div>
+            <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>3. Deterministic Cryptographic Audit Trail</span>
+            <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '0.15rem' }}>
+              Full AG Grid log of every purchase evaluation with tamper-evident HMAC verification
+            </div>
+          </div>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            Click any row to inspect raw cryptographic payload
+            {auditLog.length} Recorded Events • Click any row for JSON proof
           </span>
         </div>
 
-        <div className="ag-theme-quartz" style={{ height: 420, width: '100%', borderRadius: 8, overflow: 'hidden' }}>
+        {/* AG Grid without scroll traps: using domLayout="autoHeight" with pagination */}
+        <div className="ag-theme-quartz" style={{ width: '100%', borderRadius: 8, border: '1px solid var(--border-color)' }}>
           <AgGridReact
+            theme="legacy"
             rowData={auditLog}
             columnDefs={columnDefs}
+            domLayout="autoHeight"
             pagination={true}
             paginationPageSize={10}
+            paginationPageSizeSelector={[10, 20, 50]}
             onRowClicked={onRowClicked}
-            rowSelection="single"
             animateRows={true}
           />
         </div>
       </div>
 
-      {/* Drawer / Modal for Selected Row Inspection */}
+      {/* DRAWER / MODAL FOR SELECTED AUDIT EVENT */}
       {selectedEvent && (
         <div
           style={{
@@ -339,7 +465,7 @@ export const DashboardPage: React.FC = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(15, 23, 42, 0.5)',
+            background: 'rgba(15, 23, 42, 0.45)',
             backdropFilter: 'blur(3px)',
             display: 'flex',
             justifyContent: 'flex-end',
@@ -349,7 +475,7 @@ export const DashboardPage: React.FC = () => {
         >
           <div
             style={{
-              width: '540px',
+              width: '560px',
               maxWidth: '92vw',
               background: '#ffffff',
               borderLeft: '1px solid var(--border-color)',
@@ -360,9 +486,12 @@ export const DashboardPage: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>Audit Event Payload</h3>
+              <div>
+                <span className="badge badge-allow" style={{ marginBottom: '0.25rem' }}>Cryptographic Proof</span>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>Audit Event Payload</h3>
+              </div>
               <button
-                style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1rem' }}
                 onClick={() => setSelectedEvent(null)}
               >
                 ✕
@@ -379,7 +508,7 @@ export const DashboardPage: React.FC = () => {
                 <strong style={{ color: 'var(--text-primary)' }}>{selectedEvent.event_type}</strong>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Verdict:</span>{' '}
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Guard Verdict:</span>{' '}
                 <span className={`badge ${selectedEvent.decision === 'ALLOW' ? 'badge-allow' : selectedEvent.decision === 'ESCALATE' ? 'badge-escalate' : 'badge-block'}`}>
                   {selectedEvent.decision || 'N/A'}
                 </span>
