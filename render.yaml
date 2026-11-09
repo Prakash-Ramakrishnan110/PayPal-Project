@@ -1,0 +1,45 @@
+# render.yaml - Render Blueprint for Mandate Guard
+services:
+  # Backend FastAPI API Service
+  - type: web
+    name: mandate-guard-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_BASE_URL
+        value: https://api-m.sandbox.paypal.com
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite
+      - key: MANDATE_SIGNING_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///./mandate_guard.db
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: mandate-guard-ui
+          property: host
+
+  # Frontend Vite Static Site
+  - type: web
+    name: mandate-guard-ui
+    runtime: static
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: mandate-guard-api
+          property: host
